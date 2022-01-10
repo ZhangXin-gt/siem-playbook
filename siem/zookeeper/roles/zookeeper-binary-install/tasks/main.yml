@@ -39,7 +39,7 @@
 
 - name: Extract JDK
   ansible.builtin.unarchive:
-    src: 'apache-zookeeper-{{ version }}-bin.tar.gz'
+    src: '{{ jdk_temp.path }}/jdk.tar.gz'
     dest: '{{ install_base }}/{{ version }}/jdk'
     remote_src: yes
     extra_opts:
