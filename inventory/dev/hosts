@@ -2,3 +2,8 @@
 ip-10-1-79-151.ec2.internal
 ip-10-1-79-153.ec2.internal
 ip-10-1-79-59.ec2.internal
+
+[kafka]
+ip-10-1-79-249.ec2.internal
+ip-10-1-79-17.ec2.internal
+ip-10-1-79-189.ec2.internal
