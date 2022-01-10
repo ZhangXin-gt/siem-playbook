@@ -19,7 +19,6 @@
     dest: '{{ install_base }}/{{ version }}'
     extra_opts:
       - --strip-components=1
-      - '-C '{{ install_base }}/{{ version }}/jdk'
 
 - name: Create download temp folder
   ansible.builtin.tempfile:
