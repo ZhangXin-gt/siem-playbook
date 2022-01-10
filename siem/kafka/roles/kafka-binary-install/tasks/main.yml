@@ -5,7 +5,6 @@
     state: absent
   loop:
     - '{{ install_base }}/{{ version }}'
-    - '{{ data_dir }}'
 
 - name: Ensure base install location exists
   ansible.builtin.file:
