@@ -1,6 +1,6 @@
 ---
 
-- name: cleanup
+- name: Clean up
   ansible.builtin.file:
     path: '{{ item }}'
     state: absent

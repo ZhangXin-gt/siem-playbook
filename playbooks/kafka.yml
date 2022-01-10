@@ -1,0 +1,7 @@
+---
+- name: install kafka
+  hosts: kafka
+  roles:
+    - kafka-binary-install
+  tags:
+    - install

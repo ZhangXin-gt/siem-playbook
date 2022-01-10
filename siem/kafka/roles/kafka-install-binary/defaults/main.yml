@@ -1,0 +1,4 @@
+---
+install_base: /tmp/kafka
+version: 3.0.0
+scala_version: 2.13
