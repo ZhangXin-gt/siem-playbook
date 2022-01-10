@@ -1,0 +1,3 @@
+---
+install_base: /tmp/zookeeper
+version: 3.6.3

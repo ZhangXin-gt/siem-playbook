@@ -1,0 +1,13 @@
+---
+
+- name: Ensure base install location exists
+  ansible.builtin.file:
+    path: '{{ install_base }}/{{ version }}'
+    state: directory
+  
+- name: Install binary
+  ansible.builtin.unarchive:
+    src: 'apache-zookeeper-{{ version }}-bin.tar.gz'
+    dest: '{{ install_base }}/{{ version }}'
+    extra_opts:
+      - --strip-components=1

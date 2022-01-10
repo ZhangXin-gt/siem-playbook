@@ -1,0 +1,24 @@
+---
+- name: install zookeeper
+  hosts: zookeeper
+  connection: local
+  roles:
+    - zookeeper-binary-install
+  tags:
+    - install
+
+- name: update config
+  hosts: zookeeper
+  connection: local
+  roles:
+    - zookeeper-config-update
+  tags:
+    - update_config
+
+- name: install certificate
+  hosts: zookeeper
+  connection: local
+  roles:
+    - zookeeper-certificate-install
+  tags:
+    - install_certificate

@@ -1,0 +1,90 @@
+---
+- name: create temp folder
+  ansible.builtin.tempfile:
+    state: directory
+    prefix: siem_zookeeper
+  register: cert_temp
+
+- name: copy root certificate
+  ansible.builtin.copy:
+    src: '{{ item }}'
+    dest: '{{ cert_temp.path }}/{{ item }}'
+  loop:
+    - rootCA.key
+    - rootCA.pem
+
+- name: create server certificate private key
+  ansible.builtin.command:
+    cmd: openssl genrsa -out server.key 2048
+    chdir: '{{ cert_temp.path }}'
+
+- name: create server certificate csr
+  ansible.builtin.command:
+    cmd: >
+      openssl req -new -key server.key -out server.csr
+      -subj "/C=US/ST=CA/L=MVT/O=TestOrg/OU=Cloud/CN={{ inventory_hostname }}"
+    chdir: '{{ cert_temp.path }}'
+
+- name: sign server certificate
+  ansible.builtin.shell:
+    cmd: >
+      openssl x509 -req
+      -in server.csr
+      -extensions server_ext
+      -CA rootCA.pem
+      -CAkey rootCA.key
+      -CAcreateserial
+      -out server.crt
+      -days 365
+      -extfile
+      <(echo '[server_ext]'; echo 'extendedKeyUsage=serverAuth,clientAuth'; echo 'subjectAltName=DNS:{{ inventory_hostname }}')
+    chdir: '{{ cert_temp.path }}'
+    executable: /bin/bash
+
+- name: create pkcs12 file
+  ansible.builtin.command:
+    cmd: >
+      openssl pkcs12 -export
+      -inkey {{ cert_temp.path }}/server.key
+      -in {{ cert_temp.path }}/server.crt
+      -out {{ cert_temp.path }}/server.p12
+      -password "pass:{{ keystore_pass }}"
+    chdir: '{{ cert_temp.path }}'
+
+- name: create keystore
+  ansible.builtin.command:
+    cmd: >
+      keytool -importkeystore -noprompt
+      -srckeystore server.p12
+      -srcstoretype PKCS12
+      -srcstorepass {{ keystore_pass }}
+      -destkeystore keystore.jks
+      -deststorepass {{ keystore_pass }}
+    chdir: '{{ cert_temp.path }}'
+
+- name: create truststore
+  ansible.builtin.command:
+    cmd: >
+      keytool -import -file rootCA.pem
+      -keystore truststore.jks
+      -storepass {{ truststore_pass }} -noprompt
+    chdir: '{{ cert_temp.path }}'
+
+- name: create security folder
+  ansible.builtin.file:
+    path: '{{ install_base }}/{{ version }}/security'
+    state: directory
+
+- name: install keystore and truststore
+  ansible.builtin.copy:
+    remote_src: yes
+    src: '{{ cert_temp.path }}/{{ item }}'
+    dest: '{{ install_base }}/{{ version }}/security/{{ item }}'
+  loop:
+    - keystore.jks
+    - truststore.jks
+
+- name: cleanup temp folder
+  ansible.builtin.file:
+    path: '{{ cert_temp.path }}'
+    state: absent
