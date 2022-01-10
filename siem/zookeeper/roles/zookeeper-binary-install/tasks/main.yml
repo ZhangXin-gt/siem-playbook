@@ -58,5 +58,5 @@
 - name: create myid file
   ansible.builtin.lineinfile:
     path: '{{ data_dir }}/myid'
-    line: "{{ lookup('ansible.utils.index_of', groups['zookeeper'], 'eq', inventory_hostname) }}"
+    line: "{{ lookup('ansible.utils.index_of', groups['zookeeper'], 'eq', inventory_hostname) + 1 }}"
     create: yes
