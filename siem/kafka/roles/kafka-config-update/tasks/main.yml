@@ -2,7 +2,7 @@
 
 - name: update kafka config
   ansible.builtin.template:
-    src: {{ item }}
+    src: '{{ item }}'
     dest: '{{ install_base }}/{{ version }}/{{ item }}'
   loop:
     - config/client.properties
@@ -10,7 +10,7 @@
 
 - name: update kafka script
   ansible.builtin.template:
-    src: {{ item }}
+    src: '{{ item }}'
     dest: '{{ install_base }}/{{ version }}/{{ item }}'
     mode: 0755
   loop:
