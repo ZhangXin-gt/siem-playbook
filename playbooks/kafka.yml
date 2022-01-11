@@ -21,4 +21,4 @@
   tags:
     - install_certificate
   environment:
-    PATH: /tmp/kafka/3.0.0/jdk:{{ ansible_env.PATH }}
+    PATH: /tmp/kafka/3.0.0/jdk/bin:{{ ansible_env.PATH }}
