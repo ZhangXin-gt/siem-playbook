@@ -9,3 +9,4 @@ truststore_pass: password
 offset_replica: 1
 transaction_state_log_replica: 1
 transaction_state_log_minsir: 1
+znode: kafka
