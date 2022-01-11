@@ -5,3 +5,20 @@
     - kafka-binary-install
   tags:
     - install
+
+- name: update config
+  hosts: kafka
+  roles:
+    - kafka-config-update
+  tags:
+    - update_config
+
+- name: install certificate
+  gather_facts: yes
+  hosts: kafka
+  roles:
+    - kafka-certificate-install
+  tags:
+    - install_certificate
+  environment:
+    PATH: /tmp/kafka/3.0.0/jdk:{{ ansible_env.PATH }}

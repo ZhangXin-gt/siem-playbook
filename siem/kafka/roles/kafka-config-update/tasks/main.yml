@@ -1,0 +1,6 @@
+---
+
+- name: update kafka config
+  ansible.builtin.template:
+    src: server.properties
+    dest: '{{ install_base }}/{{ version }}/config/server.properties'
