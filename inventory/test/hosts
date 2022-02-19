@@ -1,0 +1,5 @@
+[splunk]
+Jeromes-MBP ansible_connection=local
+
+
+

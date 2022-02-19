@@ -1,23 +1,32 @@
 ---
 - name: install kafka
   hosts: kafka
-  roles:
-    - kafka-binary-install
+  collections:
+    - siem.kafka
+  tasks:
+    - import_role:
+        name: kafka-binary-install
   tags:
     - install
 
 - name: update config
   hosts: kafka
-  roles:
-    - kafka-config-update
+  collections:
+    - siem.kafka
+  tasks:
+    - import_role:
+        name: kafka-config-update
   tags:
     - update_config
 
 - name: install certificate
   gather_facts: yes
   hosts: kafka
-  roles:
-    - kafka-certificate-install
+  collections:
+    - siem.kafka
+  tasks:
+    - import_role:
+        name: kafka-certificate-install
   tags:
     - install_certificate
   environment:

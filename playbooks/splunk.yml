@@ -1,0 +1,31 @@
+---
+- name: uninstall splunk
+  hosts: splunk
+  collections:
+    - siem.splunk
+  tasks:
+    - import_role:
+        name: splunk-binary-uninstall
+  tags:
+    - uninstall
+
+- name: install splunk
+  hosts: splunk
+  collections:
+    - siem.splunk
+  tasks:
+    - import_role:
+        name: splunk-binary-install
+  tags:
+    - install
+
+- name: setup splunk common config
+  hosts: splunk
+  gather_facts: yes
+  collections:
+    - siem.splunk
+  tasks:
+    - import_role:
+        name: splunk-common-setup
+  tags:
+    - common_setup

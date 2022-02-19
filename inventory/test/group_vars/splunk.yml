@@ -1,0 +1,6 @@
+splunk_home: /Users/binlei/workspace/splunk
+splunk_binary: /Users/binlei/Downloads/splunk-8.2.4-87e2dda940d1-darwin-64.tgz
+splunk_tls_priv_password: password
+base_domain: ms.com
+self_ca_path: /Users/binlei/workspace/cert/rootCA.pem
+self_ca_key: /Users/binlei/workspace/cert/rootCA.key

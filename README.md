@@ -4,28 +4,31 @@
 
 * python3.8 or newer
 * pip3 installed
-* poetry installed
+* pdm installed
 
 ## How to start
 
-### Install poetry
+### Install pdm
 
 ```
-pip3 install poetry --user -U
+python3 -m pip install pdm --user
 ```
 
 ### Install dependency
 
 ```
-python -m poetry install
+python -m pdm install
+```
+
+### Install collections
+
+```
+python3 -m pdm run ansible-galaxy collection install $PWD/siem/ -p $HOME/.ansible/collections --force
 ```
 
 ### Run playbook
 
 
 ```
-cd /path/to/project/root
-export ANSIBLE_ROLES_PATH=$PWD/siem/zookeeper/roles:$PWD/siem/kafka/roles
-
-python3 -m poetry run ansible-playbook -i inventory/dev/hosts playbooks/zookeeper.yml
+python3 -m pdm run ansible-playbook -i inventory/test/hosts playbooks/splunk.yml --tags "install"
 ```
