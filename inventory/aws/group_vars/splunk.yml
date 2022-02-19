@@ -1,0 +1,5 @@
+splunk_home: /home/ec2-user/splunk
+splunk_binary: /home/jeromex/splunk-8.2.4-87e2dda940d1-Linux-x86_64.tgz
+splunk_tls_priv_password: password
+base_domain: ec2.internal
+self_ca_path: /home/jeromex/signcert

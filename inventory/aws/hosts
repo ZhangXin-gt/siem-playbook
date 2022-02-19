@@ -1,0 +1,2 @@
+[splunk]
+ip-10-1-79-62 ansible_user=ec2-user

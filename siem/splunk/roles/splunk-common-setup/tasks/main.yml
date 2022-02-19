@@ -55,6 +55,14 @@
     prefix: siem_splunk
   register: cert_temp
 
+- name: copy self CA
+  ansible.builtin.copy:
+    src: "{{ self_ca_path }}/{{ item }}"
+    dest: "{{ cert_temp.path }}/{{ item }}"
+  loop:
+    - "rootCA.pem"
+    - "rootCA.key"
+
 - name: generate certificate private key
   community.crypto.openssl_privatekey:
     path: "{{ cert_temp.path }}/key.pem"
@@ -84,8 +92,8 @@
   community.crypto.x509_certificate:
     path: "{{ cert_temp.path }}/{{ inventory_hostname }}.crt"
     csr_path: "{{ cert_temp.path }}/{{ inventory_hostname }}.csr"
-    ownca_path: "{{ self_ca_path }}"
-    ownca_privatekey_path: "{{ self_ca_key }}"
+    ownca_path: "{{ cert_temp.path }}/rootCA.pem"
+    ownca_privatekey_path: "{{ cert_temp.path }}/rootCA.key"
     ownca_not_after: "+365d"
     provider: ownca
 
@@ -96,7 +104,7 @@
 
 - name: install ca certificate
   ansible.builtin.copy:
-    content: "{{ appsca['content'] | b64decode }}{{ lookup('file', self_ca_path) }}\n"
+    content: "{{ appsca['content'] | b64decode }}{{ lookup('file', self_ca_path + '/rootCA.pem') }}\n"
     dest: "{{ splunk_home }}/etc/auth/cacert.pem"
 
 - name: read server certificate
@@ -111,7 +119,7 @@
 
 - name: install server certificate
   ansible.builtin.copy:
-    content: "{{ server_cert['content'] | b64decode }}{{ server_key['content'] | b64decode }}{{ lookup('file', self_ca_path) }}\n"
+    content: "{{ server_cert['content'] | b64decode }}{{ server_key['content'] | b64decode }}{{ lookup('file', self_ca_path + '/rootCA.pem') }}\n"
     dest: "{{ splunk_home }}/etc/auth/server.pem"
 
 - name: install web certificate
@@ -124,7 +132,7 @@
     content: "{{ server_key['content'] | b64decode }}"
     dest: "{{ splunk_home }}/etc/auth/splunkweb/privkey.pem"
 
-- name: setup admin password
+- name: setup admin username
   community.general.ini_file:
     dest: "{{ splunk_home }}/etc/system/local/user-seed.conf"
     section: user_info
