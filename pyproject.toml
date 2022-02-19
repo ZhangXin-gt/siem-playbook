@@ -1,16 +1,22 @@
-[tool.poetry]
+[project]
 name = "siem-playbook"
 version = "0.1.0"
 description = ""
-authors = ["Jerome Xue <kongpo0412@gmail.com>"]
+authors = [
+    {name = "Jerome Xue", email = "kongpo0412@gmail.com"},
+]
+dependencies = [
+    "ansible>=5.3.0",
+]
+requires-python = ">=3.9"
+license = {text = "MIT"}
 
-[tool.poetry.dependencies]
-python = "^3.8"
-ansible = "^5.1.0"
+[project.urls]
+homepage = ""
 
-[tool.poetry.dev-dependencies]
-pytest = "^5.2"
+[tool]
+[tool.pdm]
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["pdm-pep517"]
+build-backend = "pdm.pep517.api"
