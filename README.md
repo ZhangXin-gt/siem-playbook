@@ -22,8 +22,19 @@ python -m pdm install
 
 ### Install collections
 
+
+#### Install required collections
+
 ```
-python3 -m pdm run ansible-galaxy collection install $PWD/siem/ -p $HOME/.ansible/collections --force
+python3 -m pdm run ansible-galaxy collection install ansible.posix
+python3 -m pdm run ansible-galaxy collection install community.general
+python3 -m pdm run ansible-galaxy collection install community.crypto
+```
+
+you need to run beblow command everytime you update your local collection
+
+```
+python3 -m pdm run ansible-galaxy collection install $PWD/siem/ --force
 ```
 
 ### Run playbook

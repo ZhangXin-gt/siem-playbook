@@ -144,6 +144,6 @@
   community.general.ini_file:
     dest: "{{ splunk_home }}/etc/system/local/user-seed.conf"
     section: user_info
-    option: PASSWORD
-    value: "{{ admin_pass }}"
+    option: HASHED_PASSWORD
+    value: "{{ admin_hashed_pass }}"
   no_log: yes

@@ -1,5 +1,5 @@
 [splunk]
-Jeromes-MBP ansible_connection=local
+Jeromes-MBP ansible_connection=local ansible_python_interpreter=/usr/local/bin/python3
 
 
 
