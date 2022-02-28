@@ -57,6 +57,11 @@
     content: "{{ appsca['content'] | b64decode }}{{ lookup('file', splunk.self_ca_path + '/rootCA.pem') }}\n"
     dest: "{{ splunk.home }}/etc/auth/cacert.pem"
 
+- name: generated encrypted web private key
+  ansible.builtin.command:
+    cmd: openssl pkcs8 -in key.pem -topk8 -passin pass:password -nocrypt -out unencrypted_key.pem
+    chdir: "{{ cert_temp.path }}"
+
 - name: read server certificate
   ansible.builtin.slurp:
     src: "{{ cert_temp.path }}/{{ inventory_hostname }}.crt"
@@ -64,7 +69,7 @@
 
 - name: read server key
   ansible.builtin.slurp:
-    src: "{{ cert_temp.path }}/key.pem"
+    src: "{{ cert_temp.path }}/unencrypted_key.pem"
   register: server_key
 
 - name: install server certificate
