@@ -10,7 +10,7 @@
     - uninstall
 
 - name: install splunk
-  hosts: splunk
+  hosts: license_master
   collections:
     - siem.splunk
   tasks:
