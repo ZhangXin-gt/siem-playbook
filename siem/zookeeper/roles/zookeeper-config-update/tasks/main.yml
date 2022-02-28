@@ -1,5 +1,4 @@
 ---
-
 - name: update zookeeper config
   ansible.builtin.template:
     src: zoo.cfg

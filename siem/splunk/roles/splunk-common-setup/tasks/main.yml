@@ -1,54 +1,4 @@
 ---
-- name: update kvstore to use wiredTiger engine
-  community.general.ini_file:
-    dest: "{{ splunk_home }}/etc/system/local/server.conf"
-    section: kvstore
-    option: storageEngine
-    value: wiredTiger
-
-- name: setup rootCA path
-  community.general.ini_file:
-    dest: "{{ splunk_home }}/etc/system/local/server.conf"
-    section: sslConfig
-    option: sslRootCAPath
-    value: "{{ splunk_home }}/etc/auth/cacert.pem"
-
-- name: setup management ssl private key password
-  community.general.ini_file:
-    dest: "{{ splunk_home }}/etc/system/local/server.conf"
-    section: sslConfig
-    option: sslPassword
-    value: "{{ splunk_tls_priv_password }}"
-  no_log: yes
-
-- name: enable https on splunk web portal
-  community.general.ini_file:
-    dest: "{{ splunk_home }}/etc/system/local/web.conf"
-    section: settings
-    option: enableSplunkWebSSL
-    value: "true"
-
-- name: setup web portal ssl private key path
-  community.general.ini_file:
-    dest: "{{ splunk_home }}/etc/system/local/web.conf"
-    section: settings
-    option: privKeyPath
-    value: "{{ splunk_home }}/etc/auth/splunkweb/privkey.pem"
-
-- name: setup web portal ssl cert path
-  community.general.ini_file:
-    dest: "{{ splunk_home }}/etc/system/local/web.conf"
-    section: settings
-    option: serverCert
-    value: "{{ splunk_home }}/etc/auth/splunkweb/cert.pem"
-
-- name: setup web portal ssl cert path
-  community.general.ini_file:
-    dest: "{{ splunk_home }}/etc/system/local/web.conf"
-    section: settings
-    option: sslPassword
-    value: "{{ splunk_tls_priv_password }}"
-
 - name: create temp folder
   ansible.builtin.tempfile:
     state: directory
@@ -57,7 +7,7 @@
 
 - name: copy self CA
   ansible.builtin.copy:
-    src: "{{ self_ca_path }}/{{ item }}"
+    src: "{{ splunk.self_ca_path }}/{{ item }}"
     dest: "{{ cert_temp.path }}/{{ item }}"
   loop:
     - "rootCA.pem"
@@ -66,7 +16,7 @@
 - name: generate certificate private key
   community.crypto.openssl_privatekey:
     path: "{{ cert_temp.path }}/key.pem"
-    passphrase: "{{ splunk_tls_priv_password }}"
+    passphrase: "{{ splunk.ssl.password }}"
     cipher: auto
     format: pkcs8
     size: 2048
@@ -81,12 +31,12 @@
     locality_name: Shanghai
     organization_name: Morgan Stanley
     organizational_unit_name: Technology
-    email_address: cod-siem@ms.com
+    email_address: "{{ splunk.ssl.email_address }}"
     extended_key_usage:
       - clientAuth
       - serverAuth
-    privatekey_passphrase: "{{ splunk_tls_priv_password }}"
-    subject_alt_name: "DNS:{{ inventory_hostname}},DNS:{{ inventory_hostname}}.{{ base_domain }},IP:{{ ansible_default_ipv4.address }}"
+    privatekey_passphrase: "{{ splunk.ssl.password }}"
+    subject_alt_name: "DNS:{{ inventory_hostname}}"
 
 - name: generate certificate with own CA certificate
   community.crypto.x509_certificate:
@@ -104,7 +54,7 @@
 
 - name: install ca certificate
   ansible.builtin.copy:
-    content: "{{ appsca['content'] | b64decode }}{{ lookup('file', self_ca_path + '/rootCA.pem') }}\n"
+    content: "{{ appsca['content'] | b64decode }}{{ lookup('file', self.self_ca_path + '/rootCA.pem') }}\n"
     dest: "{{ splunk_home }}/etc/auth/cacert.pem"
 
 - name: read server certificate
@@ -119,7 +69,7 @@
 
 - name: install server certificate
   ansible.builtin.copy:
-    content: "{{ server_cert['content'] | b64decode }}{{ server_key['content'] | b64decode }}{{ lookup('file', self_ca_path + '/rootCA.pem') }}\n"
+    content: "{{ server_cert['content'] | b64decode }}{{ server_key['content'] | b64decode }}{{ lookup('file', splunk.self_ca_path + '/rootCA.pem') }}\n"
     dest: "{{ splunk_home }}/etc/auth/server.pem"
 
 - name: install web certificate
@@ -131,19 +81,3 @@
   ansible.builtin.copy:
     content: "{{ server_key['content'] | b64decode }}"
     dest: "{{ splunk_home }}/etc/auth/splunkweb/privkey.pem"
-
-- name: setup admin username
-  community.general.ini_file:
-    dest: "{{ splunk_home }}/etc/system/local/user-seed.conf"
-    section: user_info
-    option: USERNAME
-    value: admin
-  no_log: yes
-
-- name: setup admin password
-  community.general.ini_file:
-    dest: "{{ splunk_home }}/etc/system/local/user-seed.conf"
-    section: user_info
-    option: HASHED_PASSWORD
-    value: "{{ admin_hashed_pass }}"
-  no_log: yes

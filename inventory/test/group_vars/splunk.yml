@@ -1,6 +1,0 @@
-splunk_home: /Users/binlei/workspace/splunk
-splunk_binary: /Users/binlei/Downloads/splunk-8.2.4-87e2dda940d1-darwin-64.tgz
-splunk_tls_priv_password: password
-base_domain: ms.com
-self_ca_path: /Users/binlei/workspace/cert
-admin_hashed_pass: $6$LxwCgUx4yLjRxtDa$Mm35yX/60AgM0G4tMRmzrrwijX3.qvBPf7j.OgNZ.wHirgQr6tpZ8JcgFhR3cMsQGuOU4vAKUxYyU86ASkLpK1

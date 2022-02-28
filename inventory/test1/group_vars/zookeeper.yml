@@ -1,0 +1,8 @@
+install_base: /Users/binlei/workspace/cod/zookeeper
+version: 3.6.3
+binary_path: /Users/binlei/workspace/cod/apache-zookeeper-3.6.3-bin.tar.gz
+data_dir: /tmp/zookeeper_data
+
+keystore_pass: password
+truststore_pass: password
+self_ca_path: /Users/binlei/workspace/cert

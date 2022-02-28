@@ -2,5 +2,3 @@
 install_base: /tmp/zookeeper
 version: 3.6.3
 data_dir: /tmp/zookeeper_data
-jdk_download_url: https://corretto.aws/downloads/latest/amazon-corretto-17-x64-linux-jdk.tar.gz
-jdk_checksum: md5:da7c91f5e90a82ddbb12764273f6b478
