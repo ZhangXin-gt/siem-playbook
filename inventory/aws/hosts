@@ -1,2 +1,5 @@
-[splunk]
-ip-10-1-79-62 ansible_user=ec2-user
+[splunk:children]
+license_master
+
+[license_master]
+ip-10-1-79-235.ec2.internal ansible_user=ec2-user
