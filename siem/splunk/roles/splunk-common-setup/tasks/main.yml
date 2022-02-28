@@ -49,13 +49,13 @@
 
 - name: read app ca
   ansible.builtin.slurp:
-    src: "{{ splunk_home }}/etc/auth/appsCA.pem"
+    src: "{{ splunk.home }}/etc/auth/appsCA.pem"
   register: appsca
 
 - name: install ca certificate
   ansible.builtin.copy:
-    content: "{{ appsca['content'] | b64decode }}{{ lookup('file', self.self_ca_path + '/rootCA.pem') }}\n"
-    dest: "{{ splunk_home }}/etc/auth/cacert.pem"
+    content: "{{ appsca['content'] | b64decode }}{{ lookup('file', splunk.self_ca_path + '/rootCA.pem') }}\n"
+    dest: "{{ splunk.home }}/etc/auth/cacert.pem"
 
 - name: read server certificate
   ansible.builtin.slurp:
@@ -70,17 +70,17 @@
 - name: install server certificate
   ansible.builtin.copy:
     content: "{{ server_cert['content'] | b64decode }}{{ server_key['content'] | b64decode }}{{ lookup('file', splunk.self_ca_path + '/rootCA.pem') }}\n"
-    dest: "{{ splunk_home }}/etc/auth/server.pem"
+    dest: "{{ splunk.home }}/etc/auth/server.pem"
 
 - name: install web certificate
   ansible.builtin.copy:
     content: "{{ server_cert['content'] | b64decode }}"
-    dest: "{{ splunk_home }}/etc/auth/splunkweb/cert.pem"
+    dest: "{{ splunk.home }}/etc/auth/splunkweb/cert.pem"
 
 - name: install private key
   ansible.builtin.copy:
     content: "{{ server_key['content'] | b64decode }}"
-    dest: "{{ splunk_home }}/etc/auth/splunkweb/privkey.pem"
+    dest: "{{ splunk.home }}/etc/auth/splunkweb/privkey.pem"
 
 - name: install config
   ansible.builtin.template:
