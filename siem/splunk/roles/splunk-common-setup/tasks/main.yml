@@ -59,7 +59,7 @@
 
 - name: generated encrypted web private key
   ansible.builtin.command:
-    cmd: openssl pkcs8 -in key.pem -topk8 -passin pass:password -nocrypt -out unencrypted_key.pem
+    cmd: "openssl pkcs8 -in key.pem -topk8 -passin pass:{{ splunk.ssl.password }} -nocrypt -out unencrypted_key.pem"
     chdir: "{{ cert_temp.path }}"
 
 - name: read server certificate

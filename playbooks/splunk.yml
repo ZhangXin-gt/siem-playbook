@@ -20,8 +20,7 @@
     - install
 
 - name: setup splunk common config
-  hosts: splunk
-  gather_facts: yes
+  hosts: license_master
   collections:
     - siem.splunk
   tasks:
