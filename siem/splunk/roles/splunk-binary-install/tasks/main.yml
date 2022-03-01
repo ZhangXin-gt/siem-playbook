@@ -1,8 +1,4 @@
 ---
-- name: debug
-  ansible.builtin.debug:
-    var: splunk.home
-
 - name: ensure splunk home directory exists
   ansible.builtin.file:
     path: '{{ splunk.home }}'
