@@ -5,134 +5,125 @@
     prefix: siem_kafka
   register: cert_temp
 
-- name: copy root certificate
+- name: copy self CA
   ansible.builtin.copy:
-    src: '{{ item }}'
-    dest: '{{ cert_temp.path }}/{{ item }}'
+    src: "{{ kafka.self_ca_path }}/{{ item }}"
+    dest: "{{ cert_temp.path }}/{{ item }}"
   loop:
-    - rootCA.key
-    - rootCA.pem
+    - "rootCA.pem"
+    - "rootCA.key"
 
-- name: create server certificate private key
-  ansible.builtin.command:
-    cmd: openssl genrsa -out server.key 2048
-    chdir: '{{ cert_temp.path }}'
+- name: generate certificate private key
+  community.crypto.openssl_privatekey:
+    path: "{{ cert_temp.path }}/{{ inventory_hostname }}.key"
+    passphrase: "{{ kafka.keystore_pass }}"
+    cipher: auto
+    format: pkcs8
+    size: 2048
 
-- name: create server certificate csr
-  ansible.builtin.command:
-    cmd: >
-      openssl req -new -key server.key -out server.csr
-      -subj "/C=US/ST=CA/L=MVT/O=TestOrg/OU=Cloud/CN={{ inventory_hostname }}"
-    chdir: '{{ cert_temp.path }}'
+- name: create certificate csr file
+  community.crypto.openssl_csr:
+    path: "{{ cert_temp.path }}/{{ inventory_hostname }}.csr"
+    privatekey_path: "{{ cert_temp.path }}/{{ inventory_hostname }}.key"
+    common_name: "{{ inventory_hostname }}"
+    country_name: CN
+    state_or_province_name: Shanghai
+    locality_name: Shanghai
+    organization_name: Morgan Stanley
+    organizational_unit_name: Technology
+    extended_key_usage:
+      - clientAuth
+      - serverAuth
+    privatekey_passphrase: "{{ kafka.keystore_pass }}"
+    subject_alt_name: "DNS:{{ inventory_hostname}}"
 
-- name: sign server certificate
-  ansible.builtin.shell:
-    cmd: >
-      openssl x509 -req
-      -in server.csr
-      -extensions server_ext
-      -CA rootCA.pem
-      -CAkey rootCA.key
-      -CAcreateserial
-      -out server.crt
-      -days 365
-      -extfile
-      <(echo '[server_ext]'; echo 'extendedKeyUsage=serverAuth,clientAuth'; echo 'subjectAltName=DNS:{{ inventory_hostname }}')
-    chdir: '{{ cert_temp.path }}'
-    executable: /bin/bash
+- name: generate certificate with own CA certificate
+  community.crypto.x509_certificate:
+    path: "{{ cert_temp.path }}/{{ inventory_hostname }}.crt"
+    csr_path: "{{ cert_temp.path }}/{{ inventory_hostname }}.csr"
+    ownca_path: "{{ cert_temp.path }}/rootCA.pem"
+    ownca_privatekey_path: "{{ cert_temp.path }}/rootCA.key"
+    ownca_not_after: "+365d"
+    provider: ownca
 
-- name: create pkcs12 file
-  ansible.builtin.command:
-    cmd: >
-      openssl pkcs12 -export
-      -inkey {{ cert_temp.path }}/server.key
-      -in {{ cert_temp.path }}/server.crt
-      -out {{ cert_temp.path }}/server.p12
-      -password "pass:{{ keystore_pass }}"
-    chdir: '{{ cert_temp.path }}'
-
-- name: create keystore
-  ansible.builtin.command:
-    cmd: >
-      keytool -importkeystore -noprompt
-      -srckeystore server.p12
-      -srcstoretype PKCS12
-      -srcstorepass {{ keystore_pass }}
-      -destkeystore keystore.jks
-      -deststorepass {{ keystore_pass }}
-    chdir: '{{ cert_temp.path }}'
-
-- name: create zk client certificate private key
-  ansible.builtin.command:
-    cmd: openssl genrsa -out client.key 2048
-    chdir: '{{ cert_temp.path }}'
-
-- name: create zk client certificate csr
-  ansible.builtin.command:
-    cmd: >
-      openssl req -new -key client.key -out client.csr
-      -subj "/C=US/ST=CA/L=MVT/O=TestOrg/OU=Cloud/CN=zookeeper@ms.com"
-    chdir: '{{ cert_temp.path }}'
-
-- name: sign zk client certificate
-  ansible.builtin.shell:
-    cmd: >
-      openssl x509 -req
-      -in client.csr
-      -extensions server_ext
-      -CA rootCA.pem
-      -CAkey rootCA.key
-      -CAcreateserial
-      -out client.crt
-      -days 365
-      -extfile
-      <(echo '[server_ext]'; echo 'extendedKeyUsage=clientAuth'; echo 'subjectAltName=email:zookeeper@ms.com')
-    chdir: '{{ cert_temp.path }}'
-    executable: /bin/bash
+- name: create security folder
+  ansible.builtin.file:
+    path: "{{ kafka.base }}/{{ kafka.version }}/security"
+    state: directory
 
 - name: create pkcs12 file
   ansible.builtin.command:
     cmd: >
       openssl pkcs12 -export
-      -inkey {{ cert_temp.path }}/client.key
-      -in {{ cert_temp.path }}/client.crt
-      -out {{ cert_temp.path }}/client.p12
-      -password "pass:{{ zk_keystore_pass }}"
-    chdir: '{{ cert_temp.path }}'
-
-- name: create keystore
-  ansible.builtin.command:
-    cmd: >
-      keytool -importkeystore -noprompt
-      -srckeystore client.p12
-      -srcstoretype PKCS12
-      -srcstorepass {{ zk_keystore_pass }}
-      -destkeystore zk_keystore.jks
-      -deststorepass {{ zk_keystore_pass }}
-    chdir: '{{ cert_temp.path }}'
+      -inkey {{ inventory_hostname }}.key
+      -in {{ inventory_hostname }}.crt
+      -out keystore.p12      
+      -password "pass:{{ kafka.keystore_pass }}"
+      -passin "pass:{{ kafka.keystore_pass }}"
+    chdir: "{{ cert_temp.path }}"
 
 - name: create truststore
   ansible.builtin.command:
     cmd: >
       keytool -import -file rootCA.pem
-      -keystore truststore.jks
-      -storepass {{ truststore_pass }} -noprompt
-    chdir: '{{ cert_temp.path }}'
+      -keystore truststore.p12
+      -storetype pkcs12
+      -storepass {{ kafka.truststore_pass }} -noprompt
+    chdir: "{{ cert_temp.path }}"
 
-- name: create security folder
-  ansible.builtin.file:
-    path: '{{ install_base }}/{{ version }}/security'
-    state: directory
+- name: generate zookeeper client certificate private key
+  community.crypto.openssl_privatekey:
+    path: "{{ cert_temp.path }}/zookeeper.key"
+    passphrase: "{{ kafka.zk_keystore_pass }}"
+    cipher: auto
+    format: pkcs8
+    size: 2048
+
+- name: create certificate csr file
+  community.crypto.openssl_csr:
+    path: "{{ cert_temp.path }}/zookeeper.csr"
+    privatekey_path: "{{ cert_temp.path }}/zookeeper.key"
+    common_name: "zookeeper@ms.com"
+    country_name: CN
+    state_or_province_name: Shanghai
+    locality_name: Shanghai
+    organization_name: Morgan Stanley
+    organizational_unit_name: Technology
+    email_address: cod-siem@ms.com
+    extended_key_usage:
+      - clientAuth
+    privatekey_passphrase: "{{ kafka.zk_keystore_pass }}"
+    subject_alt_name: "DNS:{{ inventory_hostname}}"
+
+- name: generate certificate with own CA certificate
+  community.crypto.x509_certificate:
+    path: "{{ cert_temp.path }}/zookeeper.crt"
+    csr_path: "{{ cert_temp.path }}/zookeeper.csr"
+    ownca_path: "{{ cert_temp.path }}/rootCA.pem"
+    ownca_privatekey_path: "{{ cert_temp.path }}/rootCA.key"
+    ownca_not_after: "+365d"
+    provider: ownca
+
+- name: create pkcs12 file
+  ansible.builtin.command:
+    cmd: >
+      openssl pkcs12 -export
+      -inkey zookeeper.key
+      -in zookeeper.crt
+      -out zookeeper.p12      
+      -password "pass:{{ kafka.zk_keystore_pass }}"
+      -passin "pass:{{ kafka.zk_keystore_pass }}"
+    chdir: "{{ cert_temp.path }}"
 
 - name: install keystore and truststore
   ansible.builtin.copy:
     remote_src: yes
     src: '{{ cert_temp.path }}/{{ item }}'
-    dest: '{{ install_base }}/{{ version }}/security/{{ item }}'
+    dest: '{{ kafka.base }}/{{ kafka.version }}/security/{{ item }}'
   loop:
-    - keystore.jks
-    - zk_keystore.jks
-    - truststore.jks
+    - keystore.p12
+    - truststore.p12
+    - zookeeper.p12
 
 - name: cleanup temp folder
   ansible.builtin.file:

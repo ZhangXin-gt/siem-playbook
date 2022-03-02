@@ -1,0 +1,13 @@
+---
+install_base: /Users/binlei/workspace/cod/kafka
+version: 3.1.0
+binary_path: /Users/binlei/workspace/cod/kafka_2.13-3.1.0.tgz
+self_ca_path: /Users/binlei/workspace/cert
+
+zk_keystore_pass: password
+keystore_pass: password
+
+offset_replica: 1
+transaction_state_log_replica: 1
+transaction_state_log_minsir: 1
+znode: kafka

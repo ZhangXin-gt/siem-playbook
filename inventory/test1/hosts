@@ -1,0 +1,5 @@
+[zookeeper]
+Jeromes-MBP ansible_connection=local ansible_python_interpreter=/usr/local/bin/python3
+
+[kafka]
+Jeromes-MacBook-Pro.local ansible_connection=local ansible_python_interpreter=/usr/local/bin/python3

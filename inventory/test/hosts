@@ -1,5 +1,5 @@
-[splunk]
+[zookeeper]
 Jeromes-MBP ansible_connection=local ansible_python_interpreter=/usr/local/bin/python3
 
-
-
+[kafka]
+Jeromes-MBP ansible_connection=local ansible_python_interpreter=/usr/local/bin/python3

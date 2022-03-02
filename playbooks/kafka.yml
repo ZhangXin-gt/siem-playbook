@@ -9,16 +9,6 @@
   tags:
     - install
 
-- name: update config
-  hosts: kafka
-  collections:
-    - siem.kafka
-  tasks:
-    - import_role:
-        name: kafka-config-update
-  tags:
-    - update_config
-
 - name: install certificate
   gather_facts: yes
   hosts: kafka
@@ -29,5 +19,13 @@
         name: kafka-certificate-install
   tags:
     - install_certificate
-  environment:
-    PATH: /tmp/kafka/3.0.0/jdk/bin:{{ ansible_env.PATH }}
+
+- name: update config
+  hosts: kafka
+  collections:
+    - siem.kafka
+  tasks:
+    - import_role:
+        name: kafka-config-update
+  tags:
+    - update_config

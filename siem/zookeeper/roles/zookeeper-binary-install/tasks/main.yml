@@ -1,62 +1,31 @@
 ---
-
 - name: Clean up
   ansible.builtin.file:
     path: '{{ item }}'
     state: absent
   loop:
-    - '{{ install_base }}/{{ version }}'
-    - '{{ data_dir }}'
+    - '{{ zookeeper.base }}/{{ zookeeper.version }}'
+    - '{{ zookeeper.data_dir }}'
 
 - name: Ensure base install location exists
   ansible.builtin.file:
-    path: '{{ install_base }}/{{ version }}'
+    path: '{{ zookeeper.base }}/{{ zookeeper.version }}'
     state: directory
   
 - name: Install binary
   ansible.builtin.unarchive:
-    src: 'apache-zookeeper-{{ version }}-bin.tar.gz'
-    dest: '{{ install_base }}/{{ version }}'
+    src: '{{ zookeeper.binary }}'
+    dest: '{{ zookeeper.base }}/{{ zookeeper.version }}'
     extra_opts:
       - --strip-components=1
-
-- name: Create download temp folder
-  ansible.builtin.tempfile:
-    state: directory
-    prefix: siem_zookeeper_jdk
-  register: jdk_temp
-
-- name: Download JDK
-  ansible.builtin.get_url:
-    url: '{{ jdk_download_url }}'
-    dest: '{{ jdk_temp.path }}/jdk.tar.gz'
-    checksum: '{{ jdk_checksum }}'
-
-- name: Ensure JDK folder exists
-  ansible.builtin.file:
-    path: '{{ install_base }}/{{ version }}/jdk'
-    state: directory
-
-- name: Extract JDK
-  ansible.builtin.unarchive:
-    src: '{{ jdk_temp.path }}/jdk.tar.gz'
-    dest: '{{ install_base }}/{{ version }}/jdk'
-    remote_src: yes
-    extra_opts:
-      - --strip-components=1
-
-- name: Delete temp folder
-  ansible.builtin.file:
-    path: '{{ jdk_temp.path }}'
-    state: absent
 
 - name: Ensure data directory exists
   ansible.builtin.file:
-    path: '{{ data_dir }}'
+    path: '{{ zookeeper.data_dir }}'
     state: directory
 
 - name: create myid file
   ansible.builtin.lineinfile:
-    path: '{{ data_dir }}/myid'
+    path: '{{ zookeeper.data_dir }}/myid'
     line: "{{ lookup('ansible.utils.index_of', groups['zookeeper'], 'eq', inventory_hostname) + 1 }}"
     create: yes

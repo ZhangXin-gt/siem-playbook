@@ -4,52 +4,16 @@
     path: '{{ item }}'
     state: absent
   loop:
-    - '{{ install_base }}/{{ version }}'
+    - '{{ kafka.base }}/{{ kafka.version }}'
 
 - name: Ensure base install location exists
   ansible.builtin.file:
-    path: '{{ install_base }}/{{ version }}'
+    path: '{{ kafka.base }}/{{ kafka.version }}'
     state: directory
-
-- name: Create download temp folder
-  ansible.builtin.tempfile:
-    state: directory
-    prefix: siem_kafka_binary
-  register: bin_temp
-
-- name: Download Kafka binary
-  ansible.builtin.get_url:
-    url: '{{ kafka_download_url }}'
-    dest: '{{ bin_temp.path }}/kafka.tgz'
 
 - name: Install binary
   ansible.builtin.unarchive:
-    remote_src: yes
-    src: '{{ bin_temp.path }}/kafka.tgz'
-    dest: '{{ install_base }}/{{ version }}'
+    src: '{{ kafka.binary }}'
+    dest: '{{ kafka.base }}/{{ kafka.version }}'
     extra_opts:
       - --strip-components=1
-
-- name: Download JDK
-  ansible.builtin.get_url:
-    url: '{{ jdk_download_url }}'
-    dest: '{{ bin_temp.path }}/jdk.tar.gz'
-    checksum: '{{ jdk_checksum }}'
-
-- name: Ensure JDK folder exists
-  ansible.builtin.file:
-    path: '{{ install_base }}/{{ version }}/jdk'
-    state: directory
-
-- name: Extract JDK
-  ansible.builtin.unarchive:
-    src: '{{ bin_temp.path }}/jdk.tar.gz'
-    dest: '{{ install_base }}/{{ version }}/jdk'
-    remote_src: yes
-    extra_opts:
-      - --strip-components=1
-
-- name: Delete temp folder
-  ansible.builtin.file:
-    path: '{{ bin_temp.path }}'
-    state: absent

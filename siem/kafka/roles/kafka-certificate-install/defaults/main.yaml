@@ -1,6 +1,0 @@
----
-install_base: /tmp/kafka
-version: 3.0.0
-zk_keystore_pass: password
-keystore_pass: password
-truststore_pass: password

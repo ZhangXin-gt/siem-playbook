@@ -21,7 +21,6 @@
 
 - name: setup splunk common config
   hosts: splunk
-  gather_facts: yes
   collections:
     - siem.splunk
   tasks:
@@ -29,3 +28,23 @@
         name: splunk-common-setup
   tags:
     - common_setup
+
+- name: install certificate
+  hosts: splunk
+  collections:
+    - siem.splunk
+  tasks:
+    - import_role:
+        name: splunk-cert-install
+  tags:
+    - install_cert
+
+- name: install license
+  hosts: license_master
+  collections:
+    - siem.splunk
+  tasks:
+    - import_role:
+        name: splunk-license-install
+  tags:
+    - install_license

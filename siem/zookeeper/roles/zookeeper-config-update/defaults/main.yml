@@ -1,6 +1,0 @@
----
-install_base: /tmp/zookeeper
-version: 3.6.3
-keystore_pass: password
-truststore_pass: password
-data_dir: /tmp/zookeeper_data

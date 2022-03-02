@@ -1,8 +1,0 @@
----
-install_base: /tmp/kafka
-version: 3.0.0
-scala_version: 2.13
-kafka_download_url: https://dlcdn.apache.org/kafka/3.0.0/kafka_2.13-3.0.0.tgz
-
-jdk_download_url: https://corretto.aws/downloads/latest/amazon-corretto-17-x64-linux-jdk.tar.gz
-jdk_checksum: md5:da7c91f5e90a82ddbb12764273f6b478
