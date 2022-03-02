@@ -7,5 +7,5 @@
 
 - name: remove all
   ansible.builtin.file:
-    path: '{{ splunk_home }}'
+    path: '{{ splunk.home }}'
     state: absent

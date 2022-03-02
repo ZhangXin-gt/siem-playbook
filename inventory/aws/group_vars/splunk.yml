@@ -10,3 +10,5 @@ splunk:
   license: /home/jeromex/license/splunk.license
   idxc:
     pass4SymmKey: indexer cluster secret
+  shc:
+    pass4SymmKey: search head cluster secret
