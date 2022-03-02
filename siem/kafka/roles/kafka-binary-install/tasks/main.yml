@@ -4,16 +4,16 @@
     path: '{{ item }}'
     state: absent
   loop:
-    - '{{ install_base }}/{{ version }}'
+    - '{{ kafka.base }}/{{ kafka.version }}'
 
 - name: Ensure base install location exists
   ansible.builtin.file:
-    path: '{{ install_base }}/{{ version }}'
+    path: '{{ kafka.base }}/{{ kafka.version }}'
     state: directory
 
 - name: Install binary
   ansible.builtin.unarchive:
-    src: '{{ binary_path }}'
-    dest: '{{ install_base }}/{{ version }}'
+    src: '{{ kafka.binary }}'
+    dest: '{{ kafka.base }}/{{ kafka.version }}'
     extra_opts:
       - --strip-components=1

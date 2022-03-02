@@ -7,7 +7,7 @@
 
 - name: copy self CA
   ansible.builtin.copy:
-    src: "{{ self_ca_path }}/{{ item }}"
+    src: "{{ kafka.self_ca_path }}/{{ item }}"
     dest: "{{ cert_temp.path }}/{{ item }}"
   loop:
     - "rootCA.pem"
@@ -16,7 +16,7 @@
 - name: generate certificate private key
   community.crypto.openssl_privatekey:
     path: "{{ cert_temp.path }}/{{ inventory_hostname }}.key"
-    passphrase: "{{ keystore_pass }}"
+    passphrase: "{{ kafka.keystore_pass }}"
     cipher: auto
     format: pkcs8
     size: 2048
@@ -34,7 +34,7 @@
     extended_key_usage:
       - clientAuth
       - serverAuth
-    privatekey_passphrase: "{{ keystore_pass }}"
+    privatekey_passphrase: "{{ kafka.keystore_pass }}"
     subject_alt_name: "DNS:{{ inventory_hostname}}"
 
 - name: generate certificate with own CA certificate
@@ -48,7 +48,7 @@
 
 - name: create security folder
   ansible.builtin.file:
-    path: "{{ install_base }}/{{ version }}/security"
+    path: "{{ kafka.base }}/{{ kafka.version }}/security"
     state: directory
 
 - name: create pkcs12 file
@@ -58,8 +58,8 @@
       -inkey {{ inventory_hostname }}.key
       -in {{ inventory_hostname }}.crt
       -out keystore.p12      
-      -password "pass:{{ keystore_pass }}"
-      -passin "pass:{{ keystore_pass }}"
+      -password "pass:{{ kafka.keystore_pass }}"
+      -passin "pass:{{ kafka.keystore_pass }}"
     chdir: "{{ cert_temp.path }}"
 
 - name: create truststore
@@ -68,27 +68,13 @@
       keytool -import -file rootCA.pem
       -keystore truststore.p12
       -storetype pkcs12
-      -storepass {{ truststore_pass }} -noprompt
+      -storepass {{ kafka.truststore_pass }} -noprompt
     chdir: "{{ cert_temp.path }}"
-
-- name: create security folder
-  ansible.builtin.file:
-    path: '{{ install_base }}/{{ version }}/security'
-    state: directory
-
-- name: install keystore and truststore
-  ansible.builtin.copy:
-    remote_src: yes
-    src: '{{ cert_temp.path }}/{{ item }}'
-    dest: '{{ install_base }}/{{ version }}/security/{{ item }}'
-  loop:
-    - keystore.p12
-    - truststore.p12
 
 - name: generate zookeeper client certificate private key
   community.crypto.openssl_privatekey:
     path: "{{ cert_temp.path }}/zookeeper.key"
-    passphrase: "{{ zk_keystore_pass }}"
+    passphrase: "{{ kafka.zk_keystore_pass }}"
     cipher: auto
     format: pkcs8
     size: 2048
@@ -106,7 +92,7 @@
     email_address: cod-siem@ms.com
     extended_key_usage:
       - clientAuth
-    privatekey_passphrase: "{{ zk_keystore_pass }}"
+    privatekey_passphrase: "{{ kafka.zk_keystore_pass }}"
     subject_alt_name: "DNS:{{ inventory_hostname}}"
 
 - name: generate certificate with own CA certificate
@@ -118,42 +104,26 @@
     ownca_not_after: "+365d"
     provider: ownca
 
-- name: create security folder
-  ansible.builtin.file:
-    path: '{{ install_base }}/{{ version }}/security'
-    state: directory
+- name: create pkcs12 file
+  ansible.builtin.command:
+    cmd: >
+      openssl pkcs12 -export
+      -inkey zookeeper.key
+      -in zookeeper.crt
+      -out zookeeper.p12      
+      -password "pass:{{ kafka.zk_keystore_pass }}"
+      -passin "pass:{{ kafka.zk_keystore_pass }}"
+    chdir: "{{ cert_temp.path }}"
 
-- name: read zookeeper client certificate
-  ansible.builtin.slurp:
-    src: "{{ cert_temp.path }}/zookeeper.crt"
-  register: zookeeper_cert
-
-- name: read zookeeper client private key
-  ansible.builtin.slurp:
-    src: "{{ cert_temp.path }}/zookeeper.key"
-  register: zookeeper_key
-
-- name: read server certificate
-  ansible.builtin.slurp:
-    src: "{{ cert_temp.path }}/{{ inventory_hostname }}.crt"
-  register: server_cert
-
-- name: read server key
-  ansible.builtin.slurp:
-    src: "{{ cert_temp.path }}/{{ inventory_hostname }}.key"
-  register: server_key
-
-- name: install zookeeper certificate
-  ansible.builtin.copy:
-    content: "{{ zookeeper_cert['content'] | b64decode }}{{ zookeeper_key['content'] | b64decode }}"
-    dest: "{{ install_base }}/{{ version }}/security/zookeeper.pem"
-    mode: '0600'
-
-- name: install cacert
+- name: install keystore and truststore
   ansible.builtin.copy:
     remote_src: yes
-    src: '{{ cert_temp.path }}/rootCA.pem'
-    dest: '{{ install_base }}/{{ version }}/security/cacert.pem'
+    src: '{{ cert_temp.path }}/{{ item }}'
+    dest: '{{ kafka.base }}/{{ kafka.version }}/security/{{ item }}'
+  loop:
+    - keystore.p12
+    - truststore.p12
+    - zookeeper.p12
 
 - name: cleanup temp folder
   ansible.builtin.file:

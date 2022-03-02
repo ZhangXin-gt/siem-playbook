@@ -2,4 +2,4 @@
 - name: update zookeeper config
   ansible.builtin.template:
     src: zoo.cfg
-    dest: '{{ install_base }}/{{ version }}/conf/zoo.cfg'
+    dest: '{{ zookeeper.base }}/{{ zookeeper.version }}/conf/zoo.cfg'

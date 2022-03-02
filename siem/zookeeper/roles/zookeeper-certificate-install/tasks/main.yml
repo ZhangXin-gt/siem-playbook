@@ -7,7 +7,7 @@
 
 - name: copy self CA
   ansible.builtin.copy:
-    src: "{{ self_ca_path }}/{{ item }}"
+    src: "{{ zookeeper.self_ca_path }}/{{ item }}"
     dest: "{{ cert_temp.path }}/{{ item }}"
   loop:
     - "rootCA.pem"
@@ -16,7 +16,7 @@
 - name: generate certificate private key
   community.crypto.openssl_privatekey:
     path: "{{ cert_temp.path }}/{{ inventory_hostname }}.key"
-    passphrase: "{{ keystore_pass }}"
+    passphrase: "{{ zookeeper.keystore_pass }}"
     cipher: auto
     format: pkcs8
     size: 2048
@@ -31,10 +31,11 @@
     locality_name: Shanghai
     organization_name: Morgan Stanley
     organizational_unit_name: Technology
+    email_address: cod-siem@ms.com
     extended_key_usage:
       - clientAuth
       - serverAuth
-    privatekey_passphrase: "{{ keystore_pass }}"
+    privatekey_passphrase: "{{ zookeeper.keystore_pass }}"
     subject_alt_name: "DNS:{{ inventory_hostname}}"
 
 - name: generate certificate with own CA certificate
@@ -48,7 +49,7 @@
 
 - name: create security folder
   ansible.builtin.file:
-    path: "{{ install_base }}/{{ version }}/security"
+    path: "{{ zookeeper.base }}/{{ zookeeper.version }}/security"
     state: directory
 
 - name: create pkcs12 file
@@ -58,8 +59,8 @@
       -inkey {{ inventory_hostname }}.key
       -in {{ inventory_hostname }}.crt
       -out keystore.p12      
-      -password "pass:{{ keystore_pass }}"
-      -passin "pass:{{ keystore_pass }}"
+      -password "pass:{{ zookeeper.keystore_pass }}"
+      -passin "pass:{{ zookeeper.keystore_pass }}"
     chdir: "{{ cert_temp.path }}"
 
 - name: create truststore
@@ -68,19 +69,19 @@
       keytool -import -file rootCA.pem
       -keystore truststore.p12
       -storetype pkcs12
-      -storepass {{ truststore_pass }} -noprompt
+      -storepass {{ zookeeper.truststore_pass }} -noprompt
     chdir: "{{ cert_temp.path }}"
 
 - name: create security folder
   ansible.builtin.file:
-    path: '{{ install_base }}/{{ version }}/security'
+    path: '{{ zookeeper.base }}/{{ zookeeper.version }}/security'
     state: directory
 
 - name: install keystore and truststore
   ansible.builtin.copy:
     remote_src: yes
     src: '{{ cert_temp.path }}/{{ item }}'
-    dest: '{{ install_base }}/{{ version }}/security/{{ item }}'
+    dest: '{{ zookeeper.base }}/{{ zookeeper.version }}/security/{{ item }}'
   loop:
     - keystore.p12
     - truststore.p12
